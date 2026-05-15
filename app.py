@@ -7,6 +7,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 
@@ -394,6 +396,7 @@ app = FastAPI(
     description="Session-based recommendation using LSTM, GRU, and SASRec models.",
     version="1.0.0",
 )
+app.mount("/static", StaticFiles(directory="./landing/static"), name="static")
 
 
 class EventItem(BaseModel):
@@ -440,6 +443,10 @@ class RecommendResponse(BaseModel):
     num_events: int
     recommendations: list[RecommendItem]
 
+@app.get("/", response_class=HTMLResponse)
+def landing_page():
+    with open("./landing/index.html", "r") as f:
+        return HTMLResponse(f.read())
 
 @app.get("/health")
 def health():
